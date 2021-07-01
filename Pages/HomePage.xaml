@@ -1,0 +1,79 @@
+﻿<Page x:Class="MiningCheck.Page3"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:gif="http://wpfanimatedgif.codeplex.com"
+      xmlns:local="clr-namespace:MiningCheck"
+      mc:Ignorable="d" 
+      d:DesignHeight="421" d:DesignWidth="687"
+      Background="Transparent"
+      Title="Page3">
+
+    
+    <ScrollViewer Name="Scroll" VerticalScrollBarVisibility="Auto">
+
+        <Grid>
+            <StackPanel Name="Loading" Background="Black" Opacity="0.4" Panel.ZIndex="1" Visibility="Hidden" HorizontalAlignment="Center" Width="687">
+                <TextBlock Text="Loading Data..." FontSize="15" FontWeight="Light" TextAlignment="Center" Foreground="White" VerticalAlignment="Center" Margin="0,210,0,0"/>
+                <TextBlock Name="data" FontSize="10" FontWeight="Light" TextAlignment="Center" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center">
+                <TextBlock Text="Wallet:" FontSize="15" FontWeight="DemiBold" TextAlignment="Center"/>
+                <TextBlock Name="WalletAdd" Text="-" FontSize="15" FontWeight="DemiBold" Margin="5,0,0,0"/>
+            </StackPanel>
+            <StackPanel Height="151" VerticalAlignment="Top" Orientation="Horizontal" Margin="10,0,21,0">
+                <StackPanel Background="LightGray" Margin="10,70,0,20">
+                    <Border BorderBrush="Black" BorderThickness="0.6"/>
+                    <TextBlock Text="Current Hashrate" TextAlignment="Center" Margin="0,2,0,0"/>
+                    <Line Stroke="Black" StrokeThickness="0.5" X1="179" Margin="0,5,0,0"/>
+                    <TextBlock Name="MainCurrentHash" Text="-" TextAlignment="Center" Margin="0,10,0,0"/>
+                </StackPanel>
+                <StackPanel Background="LightGray" Margin="50,70,0,20">
+                    <Border BorderBrush="Black" BorderThickness="0.6"/>
+                    <TextBlock Text="Reported Hashrate" TextAlignment="Center" Margin="0,2,0,0"/>
+                    <Line Stroke="Black" StrokeThickness="0.5" X1="179" Margin="0,5,0,0"/>
+                    <TextBlock Name="MainReportedHash" Text="-" TextAlignment="Center" Margin="0,10,0,0"/>
+                </StackPanel>
+                <StackPanel Background="LightGray" Margin="50,70,0,20" Width="171">
+                    <Border BorderBrush="Black" BorderThickness="0.6"/>
+                    <TextBlock Text="Balance" TextAlignment="Center" Margin="0,2,0,0"/>
+                    <Line Stroke="Black" StrokeThickness="1" X1="179" Margin="0,5,0,0"/>
+                    <TextBlock Name="MainBalance" Text="-" TextAlignment="Center" Margin="0,10,0,0"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Margin="10,151,0,0" Height="158" VerticalAlignment="Top" HorizontalAlignment="Left" Width="650">
+                <StackPanel Background="LightGray" Margin="10,10,10,0" Height="138">
+                    <Border BorderBrush="Black" BorderThickness="0.6"/>
+                    <TextBlock Text="Revenue" TextAlignment="Center" Margin="0,2,0,0"/>
+                    <Line Stroke="Black" StrokeThickness="1" X1="670" Margin="0,5,0,0"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="35,10,0,0">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Name="MainCryptoName" Text="-" Margin="0,25,0,0" />
+                            <TextBlock Name="MainFiatName" Text="-" Margin="0,30,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical" Margin="70,0,0,0" Width="69">
+                            <TextBlock Text="Daily" TextAlignment="Center"/>
+                            <TextBlock Name="MainDailyCrypto" Text="-" Margin="0,9,0,0" TextAlignment="Center"/>
+                            <TextBlock Name="MainDailyFiat" Text="-" Margin="0,30,0,0" TextAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical" Margin="110,0,0,0" Width="62">
+                            <TextBlock Text="Weekly" TextAlignment="Center"/>
+                            <TextBlock Name="MainWeeklyCrypto" Text="-" Margin="0,9,0,0" TextAlignment="Center"/>
+                            <TextBlock Name="MainWeeklyFiat" Text="-" Margin="0,30,0,0" TextAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical" Margin="110,0,0,0" Width="69">
+                            <TextBlock Text="Monthly" TextAlignment="Center"/>
+                            <TextBlock Name="MainMonthlyCrypto" Text="-" Margin="0,9,0,0" TextAlignment="Center"/>
+                            <TextBlock Name="MainMonthlyFiat" Text="-" Margin="0,30,0,0" TextAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Name="ShowMiners" Margin="21,333,0,0" HorizontalAlignment="Left" Width="628"/>
+
+        </Grid>
+    </ScrollViewer>
+</Page>

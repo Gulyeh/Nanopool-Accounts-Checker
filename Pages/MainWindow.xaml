@@ -1,0 +1,144 @@
+﻿<Window x:Class="MiningCheck.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        xmlns:local="clr-namespace:MiningCheck"
+        mc:Ignorable="d"
+        Title="Nanopool Mining Stats" Height="450" Width="800"
+        WindowState="Normal"
+        ResizeMode="CanMinimize"
+        WindowStyle="SingleBorderWindow"
+        WindowStartupLocation="CenterScreen"
+        Background="GhostWhite"
+        StateChanged="Window_StateChanged"
+        Closing="Window_Closing">
+
+    
+    <Window.Resources>
+        <Style TargetType="ToolTip" x:Key="tt_style">
+            <Setter Property="Placement" Value="Left"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="HorizontalOffset" Value="-2"/>
+            <Setter Property="VerticalOffset" Value="12"/>
+            <Setter Property="Margin" Value="20,0,0,0"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0.5"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="ToolTip" x:Key="tt_style_block">
+            <Setter Property="Placement" Value="Left"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="HorizontalOffset" Value="-2"/>
+            <Setter Property="VerticalOffset" Value="12"/>
+            <Setter Property="Margin" Value="20,0,0,0"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0.5"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+
+        <!--NotifyIcon-->    
+        <tb:TaskbarIcon x:Name="NotifyIcon"
+                    Visibility="Hidden"
+                    ToolTipText="Nanopool Mining Stats"
+                    IconSource="/Icon/17878829.ico"
+                    MenuActivation="RightClick" 
+                    PopupActivation="DoubleClick">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu Background="White">
+                    <MenuItem Header="Exit" Click="NotifyExit"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+
+        <!--Main Menu Nav Panel-->
+        <Grid x:Name="menu_panel"
+              HorizontalAlignment="left"
+              Width="100"
+              Background="White">
+
+            <Border Width="2" Margin="0,0,-95,0" Background="Black"/>
+            
+            <!--Icon Grid-->
+            
+            <StackPanel x:Name="buttons_panel">
+                <Grid Height="90">
+                    <Image Source="/Resources/17878829.png" Width="70"/>
+                </Grid>
+
+                <!--Menu List-->
+                <ListView x:Name="MenuButton_List"
+                          Background="Transparent"
+                          BorderBrush="Transparent"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" Height="312" Margin="0,20,0,0">
+
+                    <!--Home Button-->
+                    <ListViewItem x:Name="Home_Button" Height="62" Selected="Home_Button_Selected">
+                        <StackPanel Width="50" Height="50" Margin="17,6,0,0">
+                            <Image Source="/Resources/home.png" Height="45"/>
+                        </StackPanel>
+                        <ListViewItem.ToolTip>
+                            <ToolTip x:Name="tt_Home"
+                                     Content="Home"
+                                     Style="{StaticResource tt_style}"/>
+                        </ListViewItem.ToolTip>
+                    </ListViewItem>
+
+                    <!--Settings Button-->
+                    <ListViewItem x:Name="Settings_Button" Height="62" Margin="0,10,0,0" Selected="Settings_Button_Selected">
+                        <StackPanel Width="50" Height="50" Margin="16,9,0,0">
+                            <Image Source="/Resources/settings.png" Height="40"/>
+                        </StackPanel>
+                        <ListViewItem.ToolTip>
+                            <ToolTip x:Name="tt_Settings"
+                                     Content="Settings"
+                                     Style="{StaticResource tt_style}"/>
+                        </ListViewItem.ToolTip>
+                    </ListViewItem>
+
+                    <!--Blockchain Button-->
+                    <ListViewItem x:Name="BlockChain_Button" Height="62" Margin="0,10,0,0" Selected="Block_Button_Selected">
+                        <ListViewItem.ToolTip>
+                            <ToolTip x:Name="tt_Blockchain"
+                                Content="Blockchain Explorer"
+                                Style="{StaticResource tt_style_block}"/>
+                        </ListViewItem.ToolTip>
+                        <StackPanel Width="50" Height="50" Margin="16,9,0,0">
+                            <Image Source="/Resources/block.png" Height="40"/>
+                        </StackPanel>
+                    </ListViewItem>
+                    
+                    <!--Info Button-->
+                    <ListViewItem x:Name="Info_Button" Height="62" Margin="0,10,0,0" Selected="Info_Button_Selected">
+                        <StackPanel Width="50" Height="50" Margin="16,9,0,0">
+                            <Image Source="/Resources/info.png" Height="40"/>
+                        </StackPanel>
+                        <ListViewItem.ToolTip>
+                            <ToolTip x:Name="tt_Info"
+                                     Content="Info"
+                                     Style="{StaticResource tt_style}"/>
+                        </ListViewItem.ToolTip>
+                    </ListViewItem>
+                </ListView>
+            </StackPanel>
+        </Grid>
+
+        <!--Main Window-->
+
+        <Grid x:Name="Main_Panel"
+              HorizontalAlignment="Right"
+              Width="687"
+              Background="GhostWhite"
+              Height="Auto">
+            <Frame Name="MainPanel" NavigationUIVisibility="Hidden"/>
+        </Grid>
+    </Grid>
+</Window>
