@@ -6,13 +6,13 @@ namespace MiningCheck
     public class Variables
     {
         //Variables for Miners Info
-        public static string[] rigname;
-        public static string[] rephash;
-        public static string[] currhash;
-        public static string[] sharesnum;
-        public static int[] status;
+        public static string[] rigname = new string[1000];
+        public static string[] rephash = new string[1000];
+        public static string[] currhash = new string[1000];
+        public static string[] sharesnum = new string[1000];
+        public static int[] status = new int[1000];
         public static string[] CoinPrices = new string[5];
-        public static bool[] IsOnline;
+        public static bool[] IsOnline = new bool[1000]; 
 
         //General Variables
         public static string[] fiatvalues = { "USD", "EUR", "GBP", "RUR", "CNY" };
