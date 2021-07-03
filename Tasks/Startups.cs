@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.IO;
 using System.Xml.Linq;
 using System.Xml;
 using Newtonsoft.Json.Linq;
-using System.Threading;
 
 namespace MiningCheck
 {
@@ -20,14 +17,14 @@ namespace MiningCheck
             string fullpath = windows + "/minersettings.xml";
             if (File.Exists(fullpath))
             {
-                Variables.ConfigExisted = true;
+                Variables.Checkers.ConfigExisted = true;
                 if (data == "Save")
                 {
                     new XDocument(
                                 new XElement("MainSettings",
-                                new XElement("Wallet", Variables.walletaddress),
-                                new XElement("FiatCurrency", Variables.fiat),
-                                new XElement("CryptoCurrency", Variables.crypto)
+                                new XElement("Wallet", Variables.Wallet.walletAddress),
+                                new XElement("FiatCurrency", Variables.FiatInfo.fiatSelected),
+                                new XElement("CryptoCurrency", Variables.CryptoInfo.cryptoSelected)
                             )
                         )
                         .Save(fullpath);
@@ -39,15 +36,15 @@ namespace MiningCheck
                     XmlNodeList nodeList = doc.DocumentElement.SelectNodes("/MainSettings");
                     foreach (XmlNode node in nodeList)
                     {
-                        Variables.walletaddress = node.SelectSingleNode("Wallet").InnerText;
-                        Variables.fiat = Int32.Parse(node.SelectSingleNode("FiatCurrency").InnerText);
-                        Variables.crypto = Int32.Parse(node.SelectSingleNode("CryptoCurrency").InnerText);
+                        Variables.Wallet.walletAddress = node.SelectSingleNode("Wallet").InnerText;
+                        Variables.FiatInfo.fiatSelected = Int32.Parse(node.SelectSingleNode("FiatCurrency").InnerText);
+                        Variables.CryptoInfo.cryptoSelected = Int32.Parse(node.SelectSingleNode("CryptoCurrency").InnerText);
                     }
                 }
             }
             else
             {
-                Variables.ConfigExisted = false;
+                Variables.Checkers.ConfigExisted = false;
                 new XDocument(
                     new XElement("MainSettings",
                         new XElement("Wallet", ""),
@@ -62,24 +59,24 @@ namespace MiningCheck
         {
             try
             {
-                if (Variables.walletaddress != null)
+                if (Variables.Wallet.walletAddress != null)
                 {
                     //Check if account exists
-                    Variables.datamaininfo = "Checking account";
-                    string exists = await WebSocket.WebConnector("accountexist", Variables.cryptovalues[Variables.crypto]);
+                    Variables.LoadingWindow.mainDataInfo = "Checking account";
+                    string exists = await WebSocket.WebConnector("accountexist", Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
                     JObject status = JObject.Parse(exists);
-                    Variables.found = Boolean.Parse(status["status"].ToString());
+                    Variables.Checkers.found = Boolean.Parse(status["status"].ToString());
                     if (status["status"].ToString().ToLower() == "true")
                     {
-                        Variables.datamaininfo = "Downloading Data";
+                        Variables.LoadingWindow.mainDataInfo = "Downloading Data";
                         //Put Valid Address to memory
-                        Variables.lastvalidwallet = Variables.walletaddress;
+                        Variables.Wallet.lastValidWallet = Variables.Wallet.walletAddress;
                         await Task.Delay(100);
                         //Get Account Infos
-                        string generalinfo = await WebSocket.WebConnector("user", Variables.cryptovalues[Variables.crypto]);
-                        string reportedhashrate = await WebSocket.WebConnector("hashratechart", Variables.cryptovalues[Variables.crypto]);
-                        string workerslastreportedhash = await WebSocket.WebConnector("reportedhashrates", Variables.cryptovalues[Variables.crypto]);
-                        string coinsprice = await WebSocket.WebCoinPricesConnector(Variables.cryptovalues[Variables.crypto]);
+                        string generalinfo = await WebSocket.WebConnector("user", Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
+                        string reportedhashrate = await WebSocket.WebConnector("hashratechart", Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
+                        string workerslastreportedhash = await WebSocket.WebConnector("reportedhashrates", Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
+                        string coinsprice = await WebSocket.WebCoinPricesConnector(Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
 
                         //Parse Account Infos
                         JObject jsongeneral = JObject.Parse(generalinfo);
@@ -88,86 +85,81 @@ namespace MiningCheck
                         JObject jsoncoinprice = JObject.Parse(coinsprice);
 
                         //Check if account exists again just for same and bugs prevention
-                        exists = await WebSocket.WebConnector("accountexist", Variables.cryptovalues[Variables.crypto]);
+                        exists = await WebSocket.WebConnector("accountexist", Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
                         status = JObject.Parse(exists);
 
                         if (status["status"].ToString().ToLower() == "true")
                         {
-                            Variables.datamaininfo = "Processing Main Informations";
+                            Variables.LoadingWindow.mainDataInfo = "Processing Main Informations";
                             await Task.Delay(100);
                             //Get Variables and Set them
-                            Variables.MainBalance = jsongeneral["data"]["balance"].ToString();
-                            Variables.MainCurrentHash = jsongeneral["data"]["hashrate"].ToString();
-                            Variables.rigs = Int32.Parse(jsongeneral["data"]["workers"].Count().ToString());
+                            Variables.MinerData.MainBalance = jsongeneral["data"]["balance"].ToString();
+                            Variables.MinerData.MainCurrentHash = jsongeneral["data"]["hashrate"].ToString();
+                            Variables.RigInfo.rigsAmount = Int32.Parse(jsongeneral["data"]["workers"].Count().ToString());
 
                             //Check if coin has reported hash or average
-                            if (Variables.crypto == 0)
+                            if (Variables.CryptoInfo.cryptoSelected == 0)
                             {
                                 float CalculateHash = float.Parse(jsonreportedhash["data"][0]["hashrate"].ToString()) / 1000;
-                                Variables.MainReportedHash = Math.Round(CalculateHash, 1).ToString().Replace(",", ".");
+                                Variables.MinerData.MainReportedHash = Math.Round(CalculateHash, 1).ToString().Replace(",", ".");
                             }
                             else
                             {
-                                Variables.MainReportedHash = jsongeneral["data"]["avgHashrate"]["h6"].ToString().Replace(",", ".");
+                                Variables.MinerData.MainReportedHash = jsongeneral["data"]["avgHashrate"]["h6"].ToString().Replace(",", ".");
                             }
 
-                            Variables.datamaininfo = "Processing Earnings";
+                            Variables.LoadingWindow.mainDataInfo = "Processing Earnings";
                             await Task.Delay(100);
                             //Get Earnings Info and Declare
-                            string mainearnings = await WebSocket.WebRevenueConnector("approximated_earnings", Variables.cryptovalues[Variables.crypto], Variables.MainReportedHash);
+                            string mainearnings = await WebSocket.WebRevenueConnector("approximated_earnings", Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected], Variables.MinerData.MainReportedHash);
                             JObject jsonmainearnings = JObject.Parse(mainearnings);
 
                             if (Boolean.Parse(jsonmainearnings["status"].ToString()))
                             {
-                                Variables.MainCryptoDaily = Math.Round(double.Parse(jsonmainearnings["data"]["day"]["coins"].ToString()), 3).ToString();
-                                Variables.MainCryptoWeekly = Math.Round(double.Parse(jsonmainearnings["data"]["week"]["coins"].ToString()), 3).ToString();
-                                Variables.MainCryptoMonthly = Math.Round(double.Parse(jsonmainearnings["data"]["month"]["coins"].ToString()), 3).ToString();
-                                Variables.MainFiatDaily = jsonmainearnings["data"]["day"][GetFullCurrency(Variables.fiatvalues[Variables.fiat])].ToString().Split(',')[0];
-                                Variables.MainFiatWeekly = jsonmainearnings["data"]["week"][GetFullCurrency(Variables.fiatvalues[Variables.fiat])].ToString().Split(',')[0];
-                                Variables.MainFiatMonthly = jsonmainearnings["data"]["month"][GetFullCurrency(Variables.fiatvalues[Variables.fiat])].ToString().Split(',')[0];
+                                Variables.RigRevenue.MainCryptoDaily = Math.Round(double.Parse(jsonmainearnings["data"]["day"]["coins"].ToString()), 3).ToString();
+                                Variables.RigRevenue.MainCryptoWeekly = Math.Round(double.Parse(jsonmainearnings["data"]["week"]["coins"].ToString()), 3).ToString();
+                                Variables.RigRevenue.MainCryptoMonthly = Math.Round(double.Parse(jsonmainearnings["data"]["month"]["coins"].ToString()), 3).ToString();
+                                Variables.RigRevenue.MainFiatDaily = jsonmainearnings["data"]["day"][GetFullCurrency(Variables.FiatInfo.fiatValues[Variables.FiatInfo.fiatSelected])].ToString().Split(',')[0];
+                                Variables.RigRevenue.MainFiatWeekly = jsonmainearnings["data"]["week"][GetFullCurrency(Variables.FiatInfo.fiatValues[Variables.FiatInfo.fiatSelected])].ToString().Split(',')[0];
+                                Variables.RigRevenue.MainFiatMonthly = jsonmainearnings["data"]["month"][GetFullCurrency(Variables.FiatInfo.fiatValues[Variables.FiatInfo.fiatSelected])].ToString().Split(',')[0];
                             }
                             else
                             {
-                                Variables.MainCryptoDaily = String.Empty;
-                                Variables.MainCryptoWeekly = String.Empty;
-                                Variables.MainCryptoMonthly = String.Empty;
-                                Variables.MainFiatDaily = String.Empty;
-                                Variables.MainFiatWeekly = String.Empty;
-                                Variables.MainFiatMonthly = String.Empty;
+                                Variables.RigRevenue.ResetRevenue();
                             }
 
-                            Variables.datamaininfo = "Processing Rigs Data";
+                            Variables.LoadingWindow.mainDataInfo = "Processing Rigs Data";
                             await Task.Delay(100);
 
                             //Set Coin Values
-                            for (int i = 0; i < Variables.fiatvalues.Length; i++)
+                            for (int i = 0; i < Variables.FiatInfo.fiatValues.Length; i++)
                             {
-                                Variables.CoinPrices[i] = jsoncoinprice["data"]["price_" + Variables.fiatvalues[i].ToLower()].ToString();
+                                Variables.Price.CoinPrices[i] = jsoncoinprice["data"]["price_" + Variables.FiatInfo.fiatValues[i].ToLower()].ToString();
                             }
 
-                            for (int i = 0; i < Variables.rigs; i++)
+                            for (int i = 0; i < Variables.RigInfo.rigsAmount; i++)
                             {
                                 //Get Miner Name
-                                Variables.rigname[i] = jsongeneral["data"]["workers"][i]["id"].ToString();
-                                Variables.currhash[i] = jsongeneral["data"]["workers"][i]["hashrate"].ToString();
-                                Variables.sharesnum[i] = jsongeneral["data"]["workers"][i]["rating"].ToString();
+                                Variables.RigInfo.rigName[i] = jsongeneral["data"]["workers"][i]["id"].ToString();
+                                Variables.RigInfo.currHash[i] = jsongeneral["data"]["workers"][i]["hashrate"].ToString();
+                                Variables.RigInfo.sharesNum[i] = jsongeneral["data"]["workers"][i]["rating"].ToString();
 
-                                for (int j = 0; j < Variables.rigs; j++)
+                                for (int j = 0; j < Variables.RigInfo.rigsAmount; j++)
                                 {
-                                    if (Variables.rigname[i] == jsonworkersreportedhash["data"][j]["worker"].ToString())
+                                    if (Variables.RigInfo.rigName[i] == jsonworkersreportedhash["data"][j]["worker"].ToString())
                                     {
-                                        Variables.rephash[i] = jsonworkersreportedhash["data"][j]["hashrate"].ToString().Replace(",", ".");
+                                        Variables.RigInfo.repHash[i] = jsonworkersreportedhash["data"][j]["hashrate"].ToString().Replace(",", ".");
                                     }
                                 }
 
                                 //Check Miner Status
                                 if ((jsongeneral["data"]["workers"][i]["hashrate"].ToString() != "0.0") && (jsongeneral["data"]["workers"][i]["hashrate"].ToString() != "0"))
                                 {
-                                    Variables.status[i] = 1;
+                                    Variables.RigInfo.status[i] = 1;
                                 }
                                 else
                                 {
-                                    Variables.status[i] = 0;
+                                    Variables.RigInfo.status[i] = 0;
                                 }
                                 await Task.Delay(10);
                             }
@@ -178,8 +170,8 @@ namespace MiningCheck
                     else
                     {
                         //Zero account infos
-                        Variables.lastvalidwallet = String.Empty;
-                        Variables.rigs = 0;
+                        Variables.Wallet.lastValidWallet = String.Empty;
+                        Variables.RigInfo.rigsAmount = 0;
                     }
                 }
 

@@ -35,7 +35,7 @@
             <Border Height="1" Background="Black"/>
             <StackPanel Orientation="Horizontal" Height="55">
                 <TextBlock Text="Timestamp:" FontSize="10" Margin="20,20,0,0"/>
-                <TextBlock x:Name="timestamp" FontSize="10" Margin="75,20,0,0" Width="383"/>
+                <TextBlock x:Name="timestamp" FontSize="10" Margin="75,20,0,0" Width="383" RenderTransformOrigin="0.394,0.543"/>
             </StackPanel>
             <Border Height="1" Background="Black"/>
             <StackPanel Orientation="Horizontal" Height="55">

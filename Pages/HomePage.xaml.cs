@@ -15,14 +15,13 @@ namespace MiningCheck
         {
             InitializeComponent();
             RefreshInfo();
-            RefreshMinersInfo();
             LoadMiners();
             LoadinAnimation();
             DataInfoUpdate();
         }
         int usedrigs = 0;
 
-        private async Task DataInfoUpdate()
+        private async void DataInfoUpdate()
         {
             try
             {
@@ -33,7 +32,7 @@ namespace MiningCheck
                     {
                         if (Loading.Dispatcher.Invoke(() => Loading.Visibility == Visibility.Visible))
                         {
-                            data.Dispatcher.Invoke(() => data.Text = Variables.datamaininfo);
+                            data.Dispatcher.Invoke(() => data.Text = Variables.LoadingWindow.mainDataInfo);
                         }
                         await Task.Delay(100);
                     } while (1 == 1);
@@ -44,7 +43,7 @@ namespace MiningCheck
                 MessageBox.Show(ex.ToString());
             }
         }
-        private async Task LoadinAnimation()
+        private async void LoadinAnimation()
         {
             try
             {
@@ -54,9 +53,9 @@ namespace MiningCheck
                     string usedwallet = String.Empty;
                     do
                     {                   
-                        if (usedwallet != Variables.lastvalidwallet && Variables.found == true)
+                        if (usedwallet != Variables.Wallet.lastValidWallet && Variables.Checkers.found == true)
                         {
-                            usedwallet = Variables.lastvalidwallet;
+                            usedwallet = Variables.Wallet.lastValidWallet;
                             do
                             {
                                 if (Loading.Dispatcher.Invoke(() => Loading.Visibility == Visibility.Hidden))
@@ -65,13 +64,13 @@ namespace MiningCheck
                                     Loading.Dispatcher.Invoke(() => Loading.Visibility = Visibility.Visible);
                                 }
                                 await Task.Delay(1000);
-                            } while (Variables.FinishedVariables != true);
+                            } while (Variables.Checkers.FinishedVariables != true);
 
                             await Task.Delay(100);
                             Loading.Dispatcher.Invoke(() => Loading.Visibility = Visibility.Hidden);
                             Scroll.Dispatcher.Invoke(() => Scroll.IsEnabled = true);
                         }
-                        else if(Variables.found == false)
+                        else if(Variables.Checkers.found == false)
                         {
                             usedwallet = String.Empty;
                         }
@@ -85,27 +84,61 @@ namespace MiningCheck
                 MessageBox.Show(ex.ToString());
             }
         }
-        private async Task RefreshMinersInfo()
+        private async void RefreshMinersInfo()
         {
             try
             {
                 await Task.Run(async () =>
                 {
+                    int saverigs = Variables.RigInfo.rigsAmount;
+
                     do
                     {
-                        await Task.Delay(2000);
-                        if (Variables.rigs > 0)
+                        await Task.Delay(10000);
+                        for (int i = 0; i < Variables.RigInfo.rigsAmount; i++)
                         {
-                            usedrigs = 0;
+                            if (Variables.Checkers.found == true)
+                            {
+                                Application.Current.Dispatcher.Invoke((Action)delegate
+                                {
+                                    TextBlock name = (TextBlock)this.FindName("textrigname" + i);
+                                    TextBlock rephash = (TextBlock)this.FindName("textrephash" + i);
+                                    TextBlock currhash = (TextBlock)this.FindName("textcurrhash" + i);
+                                    TextBlock shares = (TextBlock)this.FindName("textshares" + i);
+                                    name.Text = Variables.RigInfo.rigName[i];
+                                    rephash.Text = Variables.RigInfo.repHash[i];
+                                    currhash.Text = Variables.RigInfo.currHash[i];
+                                    shares.Text = Variables.RigInfo.sharesNum[i];
+                                });
+                            }
+                            else
+                            {
+                                break;
+                            }
+                            await Task.Delay(10);
                         }
-                    } while (1 == 1);
+                    } while (Variables.RigInfo.rigsAmount > 0);
+
+
+                    for (int i = 0; i < saverigs; i++)
+                    {
+                        Application.Current.Dispatcher.Invoke((Action)delegate
+                        {
+                            this.UnregisterName("textrigname" + i);
+                            this.UnregisterName("textrephash" + i);
+                            this.UnregisterName("textcurrhash" + i);
+                            this.UnregisterName("textshares" + i);
+                        });
+                        await Task.Delay(1);
+                    }
+
                 });
             }catch(Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
         }
-        private async Task RefreshInfo()
+        private async void RefreshInfo()
         {
             try
             {
@@ -113,28 +146,28 @@ namespace MiningCheck
                 {
                     do
                     {
-                        if (Variables.lastvalidwallet != String.Empty)
+                        if (Variables.Checkers.found == true && Variables.MinerData.MainBalance.Length > 0)
                         {
                             //Main Infos
-                            if(Variables.lastvalidwallet.Length > 50)
+                            if(Variables.Wallet.lastValidWallet.Length > 50)
                             {
-                                WalletAdd.Dispatcher.Invoke(() => WalletAdd.Text = Variables.lastvalidwallet.Substring(0,50) + "...");
+                                WalletAdd.Dispatcher.Invoke(() => WalletAdd.Text = Variables.Wallet.lastValidWallet.Substring(0,50) + "...");
                             }else
                             {
-                                WalletAdd.Dispatcher.Invoke(() => WalletAdd.Text = Variables.lastvalidwallet);
+                                WalletAdd.Dispatcher.Invoke(() => WalletAdd.Text = Variables.Wallet.lastValidWallet);
                             }
-                            MainCryptoName.Dispatcher.Invoke(() => MainCryptoName.Text = Variables.cryptovalues[Variables.crypto]);
-                            MainFiatName.Dispatcher.Invoke(() => MainFiatName.Text = Variables.fiatvalues[Variables.fiat]);
-                            MainCurrentHash.Dispatcher.Invoke(() => MainCurrentHash.Text = Variables.MainCurrentHash);
-                            MainReportedHash.Dispatcher.Invoke(() => MainReportedHash.Text = Variables.MainReportedHash);
-                            MainBalance.Dispatcher.Invoke(() => MainBalance.Text = Variables.MainBalance);
+                            MainCryptoName.Dispatcher.Invoke(() => MainCryptoName.Text = Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
+                            MainFiatName.Dispatcher.Invoke(() => MainFiatName.Text = Variables.FiatInfo.fiatValues[Variables.FiatInfo.fiatSelected]);
+                            MainCurrentHash.Dispatcher.Invoke(() => MainCurrentHash.Text = Variables.MinerData.MainCurrentHash);
+                            MainReportedHash.Dispatcher.Invoke(() => MainReportedHash.Text = Variables.MinerData.MainReportedHash);
+                            MainBalance.Dispatcher.Invoke(() => MainBalance.Text = Variables.MinerData.MainBalance);
                             //Revenues
-                            MainDailyCrypto.Dispatcher.Invoke(() => MainDailyCrypto.Text = Variables.MainCryptoDaily);
-                            MainWeeklyCrypto.Dispatcher.Invoke(() => MainWeeklyCrypto.Text = Variables.MainCryptoWeekly);
-                            MainMonthlyCrypto.Dispatcher.Invoke(() => MainMonthlyCrypto.Text = Variables.MainCryptoMonthly);
-                            MainDailyFiat.Dispatcher.Invoke(() => MainDailyFiat.Text = Variables.MainFiatDaily);
-                            MainWeeklyFiat.Dispatcher.Invoke(() => MainWeeklyFiat.Text = Variables.MainFiatWeekly);
-                            MainMonthlyFiat.Dispatcher.Invoke(() => MainMonthlyFiat.Text = Variables.MainFiatMonthly);
+                            MainDailyCrypto.Dispatcher.Invoke(() => MainDailyCrypto.Text = Variables.RigRevenue.MainCryptoDaily);
+                            MainWeeklyCrypto.Dispatcher.Invoke(() => MainWeeklyCrypto.Text = Variables.RigRevenue.MainCryptoWeekly);
+                            MainMonthlyCrypto.Dispatcher.Invoke(() => MainMonthlyCrypto.Text = Variables.RigRevenue.MainCryptoMonthly);
+                            MainDailyFiat.Dispatcher.Invoke(() => MainDailyFiat.Text = Variables.RigRevenue.MainFiatDaily);
+                            MainWeeklyFiat.Dispatcher.Invoke(() => MainWeeklyFiat.Text = Variables.RigRevenue.MainFiatWeekly);
+                            MainMonthlyFiat.Dispatcher.Invoke(() => MainMonthlyFiat.Text = Variables.RigRevenue.MainFiatMonthly);
                         }
                         else
                         {
@@ -189,17 +222,17 @@ namespace MiningCheck
                     brdr.BorderBrush = Brushes.Black;
 
                     StackPanel insidewindow = new StackPanel();
-                    insidewindow.Name = "insidewindow";
                     insidewindow.Height = 110;
                     insidewindow.Width = 626;
                     insidewindow.Background = Brushes.White;
 
                     TextBlock minername = new TextBlock();
-                    minername.Text = Variables.rigname[value];
-                    minername.Foreground = GetStatus(Variables.status[value]);
+                    minername.Text = Variables.RigInfo.rigName[value];
+                    minername.Foreground = GetStatus(Variables.RigInfo.status[value]);
                     minername.FontSize = 20;
                     minername.HorizontalAlignment = HorizontalAlignment.Center;
                     minername.Margin = new Thickness(0, 10, 0, 0);
+                    this.RegisterName("textrigname" + value, minername);
 
                     StackPanel one = new StackPanel();
                     one.Orientation = Orientation.Horizontal;
@@ -211,9 +244,10 @@ namespace MiningCheck
                     minername0.Margin = new Thickness(20, 0, 0, 0);
 
                     TextBlock minername1 = new TextBlock();
-                    minername1.Text = Variables.rephash[value];
+                    minername1.Text = Variables.RigInfo.repHash[value];
                     minername1.FontSize = 15;
                     minername1.Margin = new Thickness(5, 0, 0, 0);
+                    this.RegisterName("textrephash" + value, minername1);
 
                     TextBlock minername2 = new TextBlock();
                     minername2.Text = "Current Hashrate:";
@@ -221,9 +255,10 @@ namespace MiningCheck
                     minername2.Margin = new Thickness(45, 0, 0, 0);
 
                     TextBlock minername3 = new TextBlock();
-                    minername3.Text = Variables.currhash[value];
+                    minername3.Text = Variables.RigInfo.currHash[value];
                     minername3.FontSize = 15;
                     minername3.Margin = new Thickness(5, 0, 0, 0);
+                    this.RegisterName("textcurrhash" + value, minername3);
 
                     TextBlock minername4 = new TextBlock();
                     minername4.Text = "Shares:";
@@ -231,10 +266,10 @@ namespace MiningCheck
                     minername4.Margin = new Thickness(45, 0, 0, 0);
 
                     TextBlock minername5 = new TextBlock();
-                    minername5.Text = Variables.sharesnum[value];
+                    minername5.Text = Variables.RigInfo.sharesNum[value];
                     minername5.FontSize = 15;
                     minername5.Margin = new Thickness(5, 0, 0, 0);
-
+                    this.RegisterName("textshares" + value, minername5);
 
                     ShowMiners.Children.Add(str);
                     str.Children.Add(brdr);
@@ -255,7 +290,7 @@ namespace MiningCheck
             }
 
         }
-        private async Task LoadMiners()
+        private async void LoadMiners()
         {
             try
             {
@@ -264,37 +299,49 @@ namespace MiningCheck
                 {
                     await Task.Delay(2000);
                     string lastusedwallet = String.Empty;
-                    string firstrigname = String.Empty;
                     bool cleared = false;
                     do
-                    {
-                        if (usedrigs < Variables.rigs)
+                    {                   
+                        if (Variables.RigInfo.rigsAmount > 0)
                         {
-                            lastusedwallet = Variables.lastvalidwallet;
-                            firstrigname = Variables.rigname[0];
-                            cleared = false;
-                            ShowMiners.Dispatcher.Invoke(() => ShowMiners.Children.Clear());
-
-                            for (int i = 0; i < Variables.rigs; i++)
+                            if (usedrigs < Variables.RigInfo.rigsAmount)
                             {
-                                CreateInfo(i);
-                                usedrigs++;
+                                lastusedwallet = Variables.Wallet.lastValidWallet;
+                                cleared = false;
+                                ShowMiners.Dispatcher.Invoke(() => ShowMiners.Children.Clear());
+                                await Task.Delay(1000);
+                                for (int i = 0; i < Variables.RigInfo.rigsAmount; i++)
+                                {
+                                    CreateInfo(i);
+                                    usedrigs++;
+                                    await Task.Delay(1);
+                                }
+                                RefreshMinersInfo();
+                                Variables.Checkers.FinishedVariables = true;
+                                Variables.LoadingWindow.mainDataInfo = "Done";
                             }
-                            await Task.Delay(1000);
-                            Variables.FinishedVariables = true;
-                            Variables.datamaininfo = "Done";
-                        }
-                        else if ((usedrigs > Variables.rigs) || (((usedrigs == Variables.rigs) && (Variables.lastvalidwallet != lastusedwallet) && (firstrigname != Variables.rigname[0])) && usedrigs > 0) )
+                            else if (usedrigs == Variables.RigInfo.rigsAmount)
+                            {
+                                if (lastusedwallet != Variables.Wallet.lastValidWallet)
+                                {
+                                    ShowMiners.Dispatcher.Invoke(() => ShowMiners.Children.Clear());
+                                    usedrigs = 0;
+                                    cleared = true;
+                                }
+                            }
+                            else if (usedrigs > Variables.RigInfo.rigsAmount)
+                            {
+                                ShowMiners.Dispatcher.Invoke(() => ShowMiners.Children.Clear());
+                                usedrigs = 0;
+                                cleared = true;
+                            }
+                        } else if (cleared == false)
                         {
                             ShowMiners.Dispatcher.Invoke(() => ShowMiners.Children.Clear());
                             usedrigs = 0;
-                        }
-                        else if(Variables.lastvalidwallet == String.Empty && cleared == false)
-                        {
-                            ShowMiners.Dispatcher.Invoke(() => ShowMiners.Children.Clear());
                             cleared = true;
                         }
-                        await Task.Delay(100);
+                        await Task.Delay(1000);
                     } while (1 == 1);
                 });
             }catch(Exception ex)

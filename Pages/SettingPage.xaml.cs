@@ -20,46 +20,75 @@ namespace MiningCheck
 
         public void FillLists()
         {
-            foreach(string value in Variables.fiatvalues)
+            foreach(string value in Variables.FiatInfo.fiatValues)
             {
                 CurrencyList.Items.Add(value);
             }
         }
-        private void FiatBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            CurrencyList.Dispatcher.Invoke(() => Variables.fiat = CurrencyList.SelectedIndex);
-        }
-        private void textChangedEventHandler(object sender, TextChangedEventArgs e)
-        {
-            WalletAddress.Dispatcher.Invoke(() => Variables.walletaddress = WalletAddress.Text);
-            Variables.ResetVars();
-            Variables.ClearArrayDatas();
-            DetectCoin();
-        }
-        private void OpenQuestionWindow(object sender, RoutedEventArgs e)
-        {
-            CoinQuestion question = new CoinQuestion();
-            question.Owner = Application.Current.MainWindow;
-            question.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            question.ShowDialog();
-            Variables.ResetVars();
-            Variables.ClearArrayDatas();
-            if (Variables.crypto == 0)
-            {
-                CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETH");
-            }
-            else if (Variables.crypto == 3)
-            {
-                CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETC");
-            }
-        }       
-        private async Task DetectCoin()
+        public async void BlockText()
         {
             try
             {
-                Variables.CheckingCryptoCoin = true;
+                await Task.Run(async () =>
+                {
+                    bool blocked = false;
+                    while (!Variables.Checkers.FinishedVariables)
+                    {
+                        if (CoinName.Dispatcher.Invoke(() => CoinName.Text != String.Empty) && blocked == false && Variables.Checkers.found == true)
+                        {
+                            WalletAddress.Dispatcher.Invoke(() => WalletAddress.IsEnabled = false);
+                            blocked = true;
+                        }
+                        await Task.Delay(10); 
+                    }
+                    WalletAddress.Dispatcher.Invoke(() => WalletAddress.IsEnabled = true);
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+        private void FiatBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            CurrencyList.Dispatcher.Invoke(() => Variables.FiatInfo.fiatSelected = CurrencyList.SelectedIndex);
+        }
+        private void textChangedEventHandler(object sender, TextChangedEventArgs e)
+        {
+            WalletAddress.Dispatcher.Invoke(() => Variables.Wallet.walletAddress = WalletAddress.Text);
+            Variables.ResetVars();
+            DetectCoin();
+            BlockText();
+        }
+        private void OpenQuestionWindow(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                CoinQuestion question = new CoinQuestion();
+                question.Owner = Application.Current.MainWindow;
+                question.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                question.ShowDialog();
+                Variables.ResetVars();
+                if (Variables.CryptoInfo.cryptoSelected == 0)
+                {
+                    CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETH");
+                }
+                else if (Variables.CryptoInfo.cryptoSelected == 3)
+                {
+                    CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETC");
+                }
+            }catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }       
+        private async void DetectCoin()
+        {
+            try
+            {
+                Variables.Checkers.CheckingCryptoCoin = true;
                 ChangeCoin.Dispatcher.Invoke(() => ChangeCoin.Visibility = Visibility.Hidden);
-                if (WalletAddress.Text.ToLower().StartsWith("0x"))
+                if (WalletAddress.Text.ToLower().StartsWith("0x") && WalletAddress.Text.Length == 42)
                 {
                     await Task.Run(async() =>
                     {
@@ -78,10 +107,10 @@ namespace MiningCheck
                                 question.Close();
                             });
 
-                            if (Variables.crypto == 0)
+                            if (Variables.CryptoInfo.cryptoSelected == 0)
                             {
                                 CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETH");
-                            }else if(Variables.crypto == 3)
+                            }else if(Variables.CryptoInfo.cryptoSelected == 3)
                             {
                                 CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETC");
                             }
@@ -89,45 +118,45 @@ namespace MiningCheck
                         else if (Boolean.Parse(type["status"].ToString()) == true)
                         {
                             CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETH");
-                            Variables.crypto = 0;
+                            Variables.CryptoInfo.cryptoSelected = 0;
                         }
                         else
                         {
-                            Variables.crypto = 3;
+                            Variables.CryptoInfo.cryptoSelected = 3;
                             CoinName.Dispatcher.Invoke(() => CoinName.Text = "ETC");
                         }
                     });
                 }
-                else if (WalletAddress.Text.ToLower().StartsWith("r"))
+                else if (WalletAddress.Text.ToLower().StartsWith("r") && WalletAddress.Text.Length == 34)
                 {
                     CoinName.Dispatcher.Invoke(() => CoinName.Text = "RVN");
-                    Variables.crypto = 1;
+                    Variables.CryptoInfo.cryptoSelected = 1;
                 }
-                else if (WalletAddress.Text.StartsWith("9"))
+                else if (WalletAddress.Text.StartsWith("9") && WalletAddress.Text.Length == 51)
                 {
                     CoinName.Dispatcher.Invoke(() => CoinName.Text = "ERGO");
-                    Variables.crypto = 2;
+                    Variables.CryptoInfo.cryptoSelected = 2;
                 }
-                else if (WalletAddress.Text.ToLower().StartsWith("t"))
+                else if (WalletAddress.Text.ToLower().StartsWith("t") && WalletAddress.Text.Length == 35)
                 {
                     CoinName.Dispatcher.Invoke(() => CoinName.Text = "ZEC");
-                    Variables.crypto = 4;
+                    Variables.CryptoInfo.cryptoSelected = 4;
                 }
-                else if (WalletAddress.Text.ToLower().StartsWith("aa"))
+                else if (WalletAddress.Text.ToLower().StartsWith("aa") && WalletAddress.Text.Length == 42)
                 {
                     CoinName.Dispatcher.Invoke(() => CoinName.Text = "CFX");
-                    Variables.crypto = 6;
+                    Variables.CryptoInfo.cryptoSelected = 6;
                 }
-                else if(WalletAddress.Text == null)
+                else if (WalletAddress.Text.Length == 95)
                 {
-                    CoinName.Dispatcher.Invoke(() => CoinName.Text = String.Empty);
+                    CoinName.Dispatcher.Invoke(() => CoinName.Text = "XMR");
+                    Variables.CryptoInfo.cryptoSelected = 5;
                 }
                 else
                 {
-                    CoinName.Dispatcher.Invoke(() => CoinName.Text = "XMR");
-                    Variables.crypto = 5;
+                    CoinName.Dispatcher.Invoke(() => CoinName.Text = String.Empty);
                 }
-                Variables.CheckingCryptoCoin = false;
+                Variables.Checkers.CheckingCryptoCoin = false;
             }
             catch(Exception ex)
             {
@@ -138,8 +167,8 @@ namespace MiningCheck
         {
             try
             {
-                WalletAddress.Text = Variables.walletaddress;
-                CurrencyList.SelectedIndex = Variables.fiat;
+                WalletAddress.Text = Variables.Wallet.walletAddress;
+                CurrencyList.SelectedIndex = Variables.FiatInfo.fiatSelected;
             }
             catch(Exception ex)
             {

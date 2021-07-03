@@ -1,10 +1,8 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
 
 namespace MiningCheck
 {
@@ -27,7 +25,7 @@ namespace MiningCheck
             GetBlockchainData();
             CheckIfOffline();
             LoadPages();
-            if (Variables.ConfigExisted)
+            if (Variables.Checkers.ConfigExisted)
             {
                 MainPanel.Content = homepage;
                 Home_Button.IsSelected = true;
@@ -72,7 +70,7 @@ namespace MiningCheck
             this.Close();
         }
 
-        private async Task CheckIfOffline()
+        private async void CheckIfOffline()
         {
             try
             {
@@ -82,18 +80,19 @@ namespace MiningCheck
                     do
                     {
                         string offlinerigs = String.Empty;
-                        if (Variables.rigs > 0 && Variables.found == true)
+
+                        if (Variables.RigInfo.rigsAmount > 0 && Variables.Checkers.found == true)
                         {
-                            for (int i = 0; i < Variables.rigs; i++)
+                            for (int i = 0; i < Variables.RigInfo.rigsAmount; i++)
                             {
-                                if (Variables.status[i] == 1)
+                                if (Variables.RigInfo.status[i] == 1)
                                 {
-                                    Variables.IsOnline[i] = true;
+                                    Variables.RigInfo.IsOnline[i] = true;
                                 }
-                                else if (Variables.status[i] == 0 && Variables.IsOnline[i] == true)
+                                else if (Variables.RigInfo.status[i] == 0 && Variables.RigInfo.IsOnline[i] == true)
                                 {
-                                    Variables.IsOnline[i] = false;
-                                    offlinerigs += Variables.rigname[i] + "\n";
+                                    Variables.RigInfo.IsOnline[i] = false;
+                                    offlinerigs += Variables.RigInfo.rigName[i] + "\n";
                                 }
                                 await Task.Delay(100);
                             }
@@ -116,7 +115,7 @@ namespace MiningCheck
             }
         }
 
-        private async Task VariablesChecking()
+        private async void VariablesChecking()
         {
             try
             {
@@ -126,11 +125,11 @@ namespace MiningCheck
                     do
                     {
                         //Looping to keep filling variables if user is in database
-                        if (Variables.CheckingCryptoCoin == false)
+                        if (Variables.Checkers.CheckingCryptoCoin == false)
                         {
-                            if (Variables.walletaddress != Variables.lastvalidwallet)
+                            if (Variables.Checkers.found == false)
                             {
-                                Variables.FinishedVariables = false;
+                                Variables.Checkers.FinishedVariables = false;
                             }
                             await Startups.FillJsonVariables();
                             await Task.Delay(10000);
@@ -145,7 +144,7 @@ namespace MiningCheck
             }
         }
 
-        private async Task GetBlockchainData()
+        private async void GetBlockchainData()
         {
             try
             {
@@ -153,11 +152,12 @@ namespace MiningCheck
                 {
                     do
                     {
-                        await Task.Delay(5000);
-                        if (Variables.ChainPageSelected == true && Variables.FinishedVariables == true)
+                        if (Variables.Checkers.ChainPageSelected == true && Variables.Checkers.FinishedVariables == true && Variables.Checkers.FinishedVariablesChain == true)
                         {
-                            await BlockChainData.GetData(Variables.cryptovalues[Variables.crypto]);
+                            Variables.Checkers.FinishedVariablesChain = false;
+                            await BlockChainData.GetData(Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
                         }
+                        await Task.Delay(5000);
                     } while (1 == 1);
                 });
             }
@@ -183,25 +183,25 @@ namespace MiningCheck
         private void Home_Button_Selected(object sender, RoutedEventArgs e)
         {
             MainPanel.Content = homepage;
-            Variables.ChainPageSelected = false;
+            Variables.Checkers.ChainPageSelected = false;
         }
 
         private void Settings_Button_Selected(object sender, RoutedEventArgs e)
         {
             MainPanel.Content = settingspage;
-            Variables.ChainPageSelected = false;
+            Variables.Checkers.ChainPageSelected = false;
         }
 
         private void Info_Button_Selected(object sender, RoutedEventArgs e)
         {
             MainPanel.Content = infopage;
-            Variables.ChainPageSelected = false;
+            Variables.Checkers.ChainPageSelected = false;
         }
 
         private void Block_Button_Selected(object sender, RoutedEventArgs e)
         {
             MainPanel.Content = blockchain;
-            Variables.ChainPageSelected = true;
+            Variables.Checkers.ChainPageSelected = true;
         }
 
     }

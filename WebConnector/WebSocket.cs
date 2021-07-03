@@ -1,10 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
+﻿using System.Net;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace MiningCheck
 {
@@ -14,7 +9,7 @@ namespace MiningCheck
         {
             try
             {
-                string url = "https://api.nanopool.org/v1/" + coin.ToLower() + "/" + type + "/" + Variables.walletaddress;
+                string url = "https://api.nanopool.org/v1/" + coin.ToLower() + "/" + type + "/" + Variables.Wallet.walletAddress;
                 var webClient = new WebClient { };
                 var response = webClient.DownloadString(url);             
                 return Task.Run(() => response);
@@ -67,10 +62,10 @@ namespace MiningCheck
                 switch(type)
                 {
                     case "account":
-                        url = "https://api.etherscan.io/api?module=account&action=balance&address=" + Variables.lastvalidwallet + "&tag=latest&apikey=XTGQY8TVBJBM4D2IH6X21CCRC8WF4BJX1J";
+                        url = "https://api.etherscan.io/api?module=account&action=balance&address=" + Variables.Wallet.lastValidWallet + "&tag=latest&apikey=XTGQY8TVBJBM4D2IH6X21CCRC8WF4BJX1J";
                         break;
                     case "transactions":
-                        url = "https://api.etherscan.io/api?module=account&action=txlist&address="+ Variables.lastvalidwallet + "&startblock=0&endblock=99999999&page=1&offset=20&sort=desc&apikey=XTGQY8TVBJBM4D2IH6X21CCRC8WF4BJX1J";
+                        url = "https://api.etherscan.io/api?module=account&action=txlist&address="+ Variables.Wallet.lastValidWallet + "&startblock=0&endblock=99999999&page=1&offset=20&sort=desc&apikey=XTGQY8TVBJBM4D2IH6X21CCRC8WF4BJX1J";
                         break;
                     default:
                         return Task.Run(() => string.Empty);
@@ -95,7 +90,7 @@ namespace MiningCheck
                 switch (type)
                 {
                     case "account":
-                        url = "https://ravencoin.network/api/addr/" + Variables.lastvalidwallet;
+                        url = "https://ravencoin.network/api/addr/" + Variables.Wallet.lastValidWallet;
                         break;
                     case "transactions":
                         url = "https://ravencoin.network/api/tx/" + tx;
@@ -123,10 +118,10 @@ namespace MiningCheck
                 switch (type)
                 {
                     case "account":
-                        url = "https://blockscout.com/etc/mainnet/api?module=account&action=balance&address=" + Variables.lastvalidwallet;
+                        url = "https://blockscout.com/etc/mainnet/api?module=account&action=balance&address=" + Variables.Wallet.lastValidWallet;
                         break;
                     case "transactions":
-                        url = "https://blockscout.com/etc/mainnet/api?module=account&action=txlist&address=" + Variables.lastvalidwallet + "&offset=20";
+                        url = "https://blockscout.com/etc/mainnet/api?module=account&action=txlist&address=" + Variables.Wallet.lastValidWallet + "&offset=20";
                         break;
                     default:
                         return Task.Run(() => string.Empty);
@@ -150,13 +145,13 @@ namespace MiningCheck
                 switch (type)
                 {
                     case "account":
-                        url = "https://api.zcha.in/v2/mainnet/accounts/" + Variables.lastvalidwallet;
+                        url = "https://api.zcha.in/v2/mainnet/accounts/" + Variables.Wallet.lastValidWallet;
                         break;
                     case "transaction1":
-                        url = "https://api.zcha.in/v2/mainnet/accounts/" + Variables.lastvalidwallet + "/recv?limit=10&offset=0&sort=blockHeight&direction=descending";
+                        url = "https://api.zcha.in/v2/mainnet/accounts/" + Variables.Wallet.lastValidWallet + "/recv?limit=10&offset=0&sort=blockHeight&direction=descending";
                         break;
                     case "transaction2":
-                        url = "https://api.zcha.in/v2/mainnet/accounts/" + Variables.lastvalidwallet + "/sent?limit=10&offset=0&sort=blockHeight&direction=descending";
+                        url = "https://api.zcha.in/v2/mainnet/accounts/" + Variables.Wallet.lastValidWallet + "/sent?limit=10&offset=0&sort=blockHeight&direction=descending";
                         break;
                     default:
                         return Task.Run(() => string.Empty);
@@ -180,10 +175,10 @@ namespace MiningCheck
                 switch (type)
                 {
                     case "account":
-                        url = "https://api.ergoplatform.com/api/v1/addresses/" + Variables.lastvalidwallet + "/balance/confirmed";
+                        url = "https://api.ergoplatform.com/api/v1/addresses/" + Variables.Wallet.lastValidWallet + "/balance/confirmed";
                         break;
                     case "transactions":
-                        url = "https://api.ergoplatform.com/api/v1/addresses/" + Variables.lastvalidwallet + "/transactions?limit=20";
+                        url = "https://api.ergoplatform.com/api/v1/addresses/" + Variables.Wallet.lastValidWallet + "/transactions?limit=20";
                         break;
                     default:
                         url = string.Empty;

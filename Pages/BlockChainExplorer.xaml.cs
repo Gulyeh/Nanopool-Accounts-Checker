@@ -1,19 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MiningCheck
 {
@@ -30,9 +22,8 @@ namespace MiningCheck
             LoadinAnimation();
             DataInfoUpdate();
         }
-        int transactions = 0;
 
-        private async Task DataInfoUpdate()
+        private async void DataInfoUpdate()
         {
             try
             {               
@@ -42,7 +33,7 @@ namespace MiningCheck
                     {                     
                         if (LoadingChain.Dispatcher.Invoke(() => LoadingChain.Visibility == Visibility.Visible))
                         {
-                            dataChain.Dispatcher.Invoke(() => dataChain.Text = Variables.datainfo);
+                            dataChain.Dispatcher.Invoke(() => dataChain.Text = Variables.LoadingWindow.blockchainDataInfo);
                         }
                         await Task.Delay(100);
                     } while (1 == 1);
@@ -53,7 +44,7 @@ namespace MiningCheck
             }
         }
 
-        private async Task LoadinAnimation()
+        private async void LoadinAnimation()
         {
             try
             {
@@ -63,11 +54,11 @@ namespace MiningCheck
                     do
                     {
                         
-                        if (Variables.ChainPageSelected == true)
+                        if (Variables.Checkers.ChainPageSelected == true)
                         {
-                            if (usedwallet != Variables.lastvalidwallet && Variables.found == true)
+                            if (usedwallet != Variables.Wallet.lastValidWallet && Variables.Checkers.found == true && Variables.Checkers.FinishedVariablesChain == false)
                             {
-                                usedwallet = Variables.lastvalidwallet;
+                                usedwallet = Variables.Wallet.lastValidWallet;
                                 do
                                 {
                                     if (LoadingChain.Dispatcher.Invoke(() => LoadingChain.Visibility == Visibility.Hidden))
@@ -77,17 +68,19 @@ namespace MiningCheck
                                         LoadingChain.Dispatcher.Invoke(() => LoadingChain.Visibility = Visibility.Visible);
                                     }
                                     await Task.Delay(500);
-                                } while (Variables.FinishedVariablesChain != true);
+                                } while (Variables.Checkers.FinishedVariablesChain == false);
 
                                 LoadingChain.Dispatcher.Invoke(() => LoadingChain.Visibility = Visibility.Hidden);
                                 ScrollChain.Dispatcher.Invoke(() => ScrollChain.IsEnabled = true);
                             }
-                            else if (Variables.found == false)
-                            {
-                                usedwallet = String.Empty;
-                            }
                         }
-                        await Task.Delay(2000);
+
+                        if (Variables.Checkers.found == false)
+                        {
+                            usedwallet = String.Empty;
+                        }
+
+                        await Task.Delay(100);
                     } while (1 == 1);
                 });
             }
@@ -154,27 +147,27 @@ namespace MiningCheck
                     btn.MouseMove += new MouseEventHandler(ToolTip_MouseMove);
 
                     TextBlock txn = new TextBlock();
-                    txn.Text = Variables.BlockHash[i].Substring(0, 11) + "...";
+                    txn.Text = Variables.BlockchainData.BlockHash[i].Substring(0, 11) + "...";
                     txn.Margin = new Thickness(15, 11, 0, 10);
 
                     TextBlock block = new TextBlock();
-                    block.Text = Variables.BlockNumber[i];
+                    block.Text = Variables.BlockchainData.BlockNumber[i];
                     block.Margin = new Thickness(52, 11, 0, 0);
 
                     TextBlock date = new TextBlock();
-                    date.Text = Variables.TransactionDate[i];
+                    date.Text = Variables.BlockchainData.TransactionDate[i];
                     date.Margin = new Thickness(25, 11, 0, 0);
 
                     TextBlock from = new TextBlock();
-                    from.Text = Variables.FromWallet[i].Substring(0, 13) + "...";
+                    from.Text = Variables.BlockchainData.FromWallet[i].Substring(0, 13) + "...";
                     from.Margin = new Thickness(10, 11, 0, 0);
 
                     TextBlock to = new TextBlock();
-                    to.Text = Variables.toWallet[i].Substring(0, 13) + "...";
+                    to.Text = Variables.BlockchainData.toWallet[i].Substring(0, 13) + "...";
                     to.Margin = new Thickness(22, 11, 0, 0);
 
                     TextBlock value = new TextBlock();
-                    value.Text = Variables.TransferedValue[i].ToString();
+                    value.Text = Variables.BlockchainData.TransferedValue[i].ToString();
                     value.Margin = new Thickness(26, 11, 0, 0);
 
                     ShowTransactions.Children.Add(Background);
@@ -195,7 +188,7 @@ namespace MiningCheck
             }
         }
 
-        private async Task LoadTransactions()
+        private async void LoadTransactions()
         {
             try
             {
@@ -203,69 +196,56 @@ namespace MiningCheck
                 await Task.Run(async () =>
                 {
                     bool cleared = false;
-                    string firstblock = String.Empty;
+                    string lastwallet = String.Empty;
+                    int transactions = 0;
                     do
                     {
                         await Task.Delay(2000);
-
-                        if (Variables.ChainPageSelected == true && Variables.FinishedVariables == true && Variables.FinishedGettingBlockData == true)
+                        if(Variables.Checkers.ChainPageSelected == true && Variables.BlockchainData.NumberTransactions > 0 && Variables.Checkers.FinishedVariables == true && Variables.Checkers.FinishedGettingBlockData == true && Variables.Checkers.found == true)
                         {
-                            if (Variables.NumberTransactions > 0 && Variables.lastvalidwallet != String.Empty)
+                            if(transactions < Variables.BlockchainData.NumberTransactions)
                             {
-
-                                if (transactions < Variables.NumberTransactions && Variables.found == true && Variables.FinishedGettingBlockData == true)
-                                {
-                                    ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
-                                    Thread.Sleep(1000);
-                                    cleared = false;
-                                    for (int i = 0; i < Variables.NumberTransactions; i++)
-                                    {
-                                        if (Variables.BlockHash[i] != null)
-                                        {
-                                            transactions++;
-                                            TransactionHistory(i);
-                                        }
-                                        await Task.Delay(10);
-                                    }
-                                    Variables.datainfo = "Done";
-                                    await Task.Delay(500);
-                                    if (ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Count > 0))
-                                    {
-                                        Variables.FinishedVariablesChain = true;
-                                    }
-                                    firstblock = Variables.BlockNumber[0];
-                                }
-                                if ((transactions > Variables.NumberTransactions) || (transactions == Variables.NumberTransactions && transactions > 0 && firstblock != Variables.BlockNumber[0]))
-                                {
-                                    ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
-                                    transactions = 0;
-                                }
-                                else if (Variables.lastvalidwallet == String.Empty && cleared == false)
-                                {
-                                    ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
-                                    transactions = 0;
-                                    cleared = true;
-                                }
-                            }
-                            else if ((Variables.NumberTransactions == 0 || Variables.lastvalidwallet == String.Empty) && cleared == false)
-                            {
-                                MessageBox.Show("here");
                                 ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
-                                Variables.FinishedVariablesChain = true;
-                                transactions = 0;
-                                cleared = true;
+                                cleared = false;
+                                lastwallet = Variables.Wallet.lastValidWallet;
+                                Thread.Sleep(1000);
+                                for (int i = 0; i < Variables.BlockchainData.NumberTransactions; i++)
+                                {
+                                    if (Variables.BlockchainData.BlockHash[i] != null)
+                                    {
+                                        transactions++;
+                                        TransactionHistory(i);
+                                    }
+                                    await Task.Delay(10);
+                                }
+                                Variables.LoadingWindow.blockchainDataInfo = "Done";
+                                await Task.Delay(1000);
                             }
-                            else if(Variables.found == false)
+                            else if(transactions == Variables.BlockchainData.NumberTransactions)
                             {
-                                Variables.FinishedVariablesChain = true;
+                                if (Variables.Wallet.lastValidWallet != lastwallet)
+                                {
+                                    ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
+                                    transactions = 0;
+                                }
+                            }else if(transactions > Variables.BlockchainData.NumberTransactions)
+                            {
+                                ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
                                 transactions = 0;
                             }
-                        }else if(Variables.NumberTransactions == 0 && Variables.ChainPageSelected == true && cleared == false)
-                        {
-                            cleared = true;
-                            ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
-                        }
 
+                            if (ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Count > 0))
+                            {
+                                Variables.Checkers.FinishedVariablesChain = true;
+                            }
+                        }
+                        else if(Variables.BlockchainData.NumberTransactions < 1 && cleared == false)
+                        {
+                            ShowTransactions.Dispatcher.Invoke(() => ShowTransactions.Children.Clear());
+                            transactions = 0;
+                            cleared = true;
+                        }
+                                             
                     } while (1 == 1);
                 });
 
@@ -275,7 +255,7 @@ namespace MiningCheck
             }
         }
 
-        private async Task RefreshWalletInfo()
+        private async void RefreshWalletInfo()
         {
             try
             {      
@@ -283,21 +263,21 @@ namespace MiningCheck
                 {
                     do
                     {  
-                        if (Variables.ChainPageSelected == true)
+                        if (Variables.Checkers.ChainPageSelected == true)
                         {
-                            if (Variables.lastvalidwallet != String.Empty)
+                            if (Variables.Checkers.found == true)
                             {
-                                WalletBalance.Dispatcher.Invoke(() => WalletBalance.Text = Variables.BlockBalance.ToString("N7") + " " + Variables.cryptovalues[Variables.crypto]);
-                                CoinPrice.Dispatcher.Invoke(() => CoinPrice.Text = Variables.CoinPrices[Variables.fiat] + " " + Variables.fiatvalues[Variables.fiat]);
+                                WalletBalance.Dispatcher.Invoke(() => WalletBalance.Text = Variables.BlockchainData.BlockBalance.ToString("N7") + " " + Variables.CryptoInfo.cryptoValues[Variables.CryptoInfo.cryptoSelected]);
+                                CoinPrice.Dispatcher.Invoke(() => CoinPrice.Text = Variables.Price.CoinPrices[Variables.FiatInfo.fiatSelected] + " " + Variables.FiatInfo.fiatValues[Variables.FiatInfo.fiatSelected]);
     
-                                if (Variables.BlockBalance != 0 && float.Parse(Variables.CoinPrices[Variables.fiat]) >= 0)
+                                if (Variables.BlockchainData.BlockBalance != 0 && float.Parse(Variables.Price.CoinPrices[Variables.FiatInfo.fiatSelected]) >= 0)
                                 {
-                                    float price = Variables.BlockBalance * float.Parse(Variables.CoinPrices[Variables.fiat]);
-                                    WalletValue.Dispatcher.Invoke(() => WalletValue.Text = price.ToString("N2") + " " + Variables.fiatvalues[Variables.fiat]);
+                                    float price = Variables.BlockchainData.BlockBalance * float.Parse(Variables.Price.CoinPrices[Variables.FiatInfo.fiatSelected]);
+                                    WalletValue.Dispatcher.Invoke(() => WalletValue.Text = price.ToString("N2") + " " + Variables.FiatInfo.fiatValues[Variables.FiatInfo.fiatSelected]);
                                 }
                                 else
                                 {
-                                    WalletValue.Dispatcher.Invoke(() => WalletValue.Text = "0 " + Variables.fiatvalues[Variables.fiat]);
+                                    WalletValue.Dispatcher.Invoke(() => WalletValue.Text = "0 " + Variables.FiatInfo.fiatValues[Variables.FiatInfo.fiatSelected]);
                                 }
                             }
                             else
