@@ -127,10 +127,6 @@ namespace MiningCheck
                         //Looping to keep filling variables if user is in database
                         if (Variables.Checkers.CheckingCryptoCoin == false)
                         {
-                            if (Variables.Checkers.found == false)
-                            {
-                                Variables.Checkers.FinishedVariables = false;
-                            }
                             await Startups.FillJsonVariables();
                             await Task.Delay(10000);
                         }

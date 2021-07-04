@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace MiningCheck
 {
@@ -88,10 +89,11 @@ namespace MiningCheck
         {
             try
             {
+                var cancelToken = new CancellationTokenSource();
                 await Task.Run(async () =>
                 {
                     int saverigs = Variables.RigInfo.rigsAmount;
-
+                    
                     do
                     {
                         await Task.Delay(10000);
@@ -132,7 +134,8 @@ namespace MiningCheck
                         await Task.Delay(1);
                     }
 
-                });
+                }, cancelToken.Token);
+
             }catch(Exception ex)
             {
                 MessageBox.Show(ex.ToString());
