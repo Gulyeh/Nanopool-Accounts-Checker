@@ -5,4 +5,6 @@ To use it, simply copy wallet which is assigned to Nanopool to text space in set
 If both ETC and ETH wallets are the same and both are being used on Nanopool, software is going to ask you which coin would you like to check. You can also select coin again.
 Blockchain explorer will show you wallet balance, value and 20 latest transactions.
 
-[Download](https://gofile.io/d/QoOCc6 "Download")
+![Miners](https://imgur.com/RY6M1nG)
+![Settings](https://imgur.com/lB9dk2H)
+![Transactions](https://imgur.com/AOUBt3f)
